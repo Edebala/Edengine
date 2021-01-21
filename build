@@ -1,0 +1,17 @@
+g++ -c -o obj/World.o src/World.cpp -w -Wall -lSDL2 -lSDL2_image
+
+g++ -c -o obj/Load.o src/Load.cpp -w -Wall
+
+g++ -c -o obj/TextureUnit.o src/TextureUnit.cpp -w -Wall -lSDL2 -lSDL2_image -lSDL2_ttf
+
+g++ -c -o obj/PhisicsUnit.o src/PhisicsUnit.cpp -w -Wall -lSDL2 -lSDL2_image
+
+g++ -c -o obj/Entity.o src/TextBox.cpp -w -Wall
+
+g++ -c -o obj/Entity.o src/Entity.cpp -w -Wall
+
+g++ -c -o obj/Camera.o src/Camera.cpp -w -Wall -lSDL2 -lSDL2_image -lSDL2_ttf
+
+g++ -c -o obj/Hud.o src/Hud.cpp -w -Wall -lSDL2 -lSDL2_image -lSDL2_ttf
+
+g++ src/main.cpp -o Game -w -Wall -lSDL2 -lSDL2_image -lSDL2_ttf obj/Load.o obj/World.o obj/Hud.o obj/TextureUnit.o obj/PhisicsUnit.o obj/Entity.o obj/Camera.o
