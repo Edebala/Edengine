@@ -1,4 +1,5 @@
 #pragma once
+#include <algorithm>
 #include <vector>
 #include <cmath>
 #include <SDL2/SDL.h>
@@ -71,15 +72,15 @@ class World
 public:
 	Camera* Cam;
 private:
-	int FindChunk(int x, int y);
+	chunk* FindChunk(int x, int y);
 	void AddChunk(int x, int y, short** m);
 	short GetBlock(int x, int y);
 	void SetBlock(int x, int y);
 	void Get_Input();
 	int Update_Entities(string& NextMap);
-	int EntityWallHCollision(int i);
-	int EntityWallVCollision(int i);
-	int EntityEntityCollision(int i, int j);
+	int EntityWallHCollision(Entity* i);
+	int EntityWallVCollision(Entity* i);
+	int EntityEntityCollision(Entity*, Entity*);
 public:
 	short Game(int &s_x, int &s_y,string& NextMap);
 	void LoadMap(string Source_Folder);

@@ -3,139 +3,105 @@
 void World::LoadMap(string Source_Folder)
 {
 	Chunks.clear();
-	string textbfr;
 	short x, y;
-		int DoorNr;
-		double Door_x,Door_y,Door_tX, Door_tY;
-		char Door_tMap[40];
+	int DoorNr;
+	double Door_x,Door_y,Door_tX, Door_tY;
 
-	if (Source_Folder.empty())
-	{
+	if (Source_Folder.empty()){
 		chunksize = 8;
 		return;
 	}
 
-		textbfr = "Maps/" + Source_Folder + ".CNK";
+	char* textbfr = (char*) malloc(12+Source_Folder.length());
+	strcpy(textbfr,"Maps/");
+	strcat(textbfr,Source_Folder.c_str());
+	strcat(textbfr,".CNK");
 
-	if (exists_test(textbfr))
-	{
-		cout<<textbfr<<" map File Found!"<<"\n";
-		ifstream be(textbfr);
-		be >> chunksize;
-		be.get();
-		short** buffer;
-		buffer = new short*[chunksize];
+	if (!exists_test(textbfr)){
+		printf("%s map File was not Found!",textbfr);
+		return;	
+	}
+	printf("%s map File Found!\n",textbfr);
+	ifstream be(textbfr);
+	be >> chunksize;
+	be.get();
+	short** buffer = new short*[chunksize];
+	for (short i = 0; i < chunksize; i++)
+		buffer[i] = new short[chunksize];
+
+	while (!be.eof()){
+		x = be.get() - '0';
+		y = be.get() - '0';
 		for (short i = 0; i < chunksize; i++)
-			buffer[i] = new short[chunksize];
-
-		while (!be.eof())
-		{
-			x = be.get() - '0';
-			y = be.get() - '0';
-			for (short i = 0; i < chunksize; i++)
-				for (short j = 0; j < chunksize; j++)
-				{
-					if (be.good())
-						buffer[i][j] = be.get() - '0';
-					else
-						buffer[i][j] = 1;
-				}
-			AddChunk(x, y, buffer);
-		}
-		std::cout<<"Map Loaded Successfully"<<"\n";
-		be.close();
+			for (short j = 0; j < chunksize; j++)
+				buffer[i][j] = be.good()?(be.get() - '0'):1;
+		AddChunk(x, y, buffer);
 	}
-	else
-	{
-			std::cout<<textbfr<<" map File was not Found!"<<"\n";
-	}
+	printf("Map Loaded Successfully\n");
+	be.close();
 }
 
 void World::LoadDoors(string Source_Folder)
 {
-	string textbfr;
 	int DoorNr;
 	double Door_x, Door_y, Door_tX, Door_tY;
 	string Door_tMap;
+	string textbfr = "Maps/" + Source_Folder + ".txt";
+
+	if (!exists_test(textbfr)) return;
 	std::ifstream be(textbfr);
-
-	textbfr = "Maps/" + Source_Folder + ".txt";
-
-	if (exists_test(textbfr))
+	be >> DoorNr;
+	for (int i = 0; i < DoorNr; i++)
 	{
-		be.open(textbfr);
-		be >> DoorNr;
-		for (int i = 0; i < DoorNr; i++)
-		{
-			be >> Door_x >> Door_y >> Door_tMap >> Door_tX >> Door_tY;
-			Entities.push_back(new Door(
-				Door_x, Door_y, Door_tMap, Door_tX, Door_tY));
-		}
-	cout<<"Doors Summoned Successfully!"<<endl;
+		be >> Door_x >> Door_y >> Door_tMap >> Door_tX >> Door_tY;
+		Entities.push_back(new Door(
+			Door_x, Door_y, Door_tMap, Door_tX, Door_tY));
 	}
+	printf("Doors Summoned Successfully!\n");
 }
 
 void World::AddChunk(int x, int y, short** m)
 {
-	int a;
-		a = FindChunk(x,y);
-	if (a == -1)
+	chunk *a = FindChunk(x,y);
+	if (a == 0)
 	{
 		Chunks.push_back(new chunk);
 		Chunks.back()->x = x;
 		Chunks.back()->y = y;
 		Chunks.back()->d = new short *[chunksize];
-		a = (int)Chunks.size() - 1;
+		a = Chunks.back();
 		for (short i = 0; i < chunksize; i++)
-			Chunks[a]->d[i] = new short[chunksize];
+			a->d[i] = new short[chunksize];
 	}
 	if (m != 0)
 	{
 		for (short i = 0; i < chunksize; i++)
 			for (short j = 0; j < chunksize; j++)
-				Chunks[a]->d[i][j] = m[i][j];
+				a->d[i][j] = m[i][j];
 	}
 	else
 	{
 		for (short i = 0; i < chunksize; i++)
 			for (short j = 0; j < chunksize; j++)
-				Chunks[a]->d[i][j] = 0;
+				a->d[i][j] = 0;
 	}
 }
 
-int World::FindChunk(int x, int y)
+chunk* World::FindChunk(int x, int y)
 {
-	for (unsigned i = 0; i < Chunks.size(); i++)
-		if (x == Chunks[i]->x and y == Chunks[i]->y)
-			return i;
-	return -1;
+	for (chunk *c: Chunks)
+		if (x == c->x and y == c->y)return c;
+	return 0;
 }
 
-short World::GetBlock(int x, int y)
-{
-	int chunk_iterator = FindChunk(
-		x / chunksize, y / chunksize);
-	if (chunk_iterator == -1) return 0;
-	return Chunks[chunk_iterator]->
-		d[x%chunksize][y%chunksize];
+short World::GetBlock(int x, int y){
+	chunk* c;
+	return ((c= FindChunk(x / chunksize, y / chunksize))==0)?0:
+		c-> d[x%chunksize][y%chunksize];
 }
 
-void World::SetBlock(int x, int y)
-{
-	int chunk_iterator = FindChunk(
-		x/chunksize,y/chunksize);
-	if (chunk_iterator == -1) return;
-	Chunks[chunk_iterator]->
-		d[x%chunksize][y%chunksize]++;
-	if (Chunks[chunk_iterator]->
-		d[x%chunksize][y%chunksize]>1)
-	Chunks[chunk_iterator]->
-		d[x%chunksize][y%chunksize] = 0;
-}
-
-short** World::GetChunk(int x, int y)
-{
-	int chunk_i = FindChunk(x / chunksize, y / chunksize);
-	return (chunk_i == -1)?0:Chunks[chunk_i]->d;
+short** World::GetChunk(int x, int y){
+	chunk* i = FindChunk(x / chunksize, y / chunksize);
+	return (i==0)?0:i->d;
 }
 

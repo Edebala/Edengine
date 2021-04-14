@@ -51,7 +51,7 @@ Camera::Camera(
 		Renderer,srfc);
 	SDL_FreeSurface(srfc);
 
-	zoom = 48;
+	zoom = 64;
 	WIDT = x;
 	HEIT = y;
 	Interface = new HUD(Renderer,this);

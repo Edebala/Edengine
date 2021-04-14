@@ -23,11 +23,11 @@ Entity::Entity(double x, double y)
 
 void Player::Control()
 {
-	Direction	=(key[SDL_SCANCODE_W] or key[SDL_SCANCODE_Z])+
-			0x02 * (key[SDL_SCANCODE_A] or key[SDL_SCANCODE_LEFT])+
-			0x04 * (key[SDL_SCANCODE_D] or key[SDL_SCANCODE_RIGHT])+
-			0x08 * (key[SDL_SCANCODE_S] or key[SDL_SCANCODE_DOWN])+
-			0x10 * (key[SDL_SCANCODE_C] or key[SDL_SCANCODE_UP]);
+	Direction	=(key[SDL_SCANCODE_Z])+
+		0x02*key[SDL_SCANCODE_LEFT]+
+		0x04*key[SDL_SCANCODE_RIGHT]+
+		0x08*key[SDL_SCANCODE_DOWN]+
+		0x10*key[SDL_SCANCODE_UP];
 }
 
 int Entity::Update()
@@ -155,6 +155,6 @@ void Creature::Descend(){
 }
 
 void Creature::Dash(){
-	Push(-speed_x + (-1 + 2*FacingRight)* 5 * movespeed,
+	Push(-speed_x + (-1+2*FacingRight)*5*movespeed,
 		-speed_y);
 }
