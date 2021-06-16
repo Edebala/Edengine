@@ -1,7 +1,6 @@
 #include "Edengine.h"
 
-Entity::Entity()
-{
+Entity::Entity(){
 	speed_x = 0;
 	speed_y = 0;
 	FacingRight = 0;
@@ -12,8 +11,7 @@ Entity::Entity()
 
 Entity::~Entity(){}
 
-Entity::Entity(double x, double y)
-{
+Entity::Entity(double x, double y){
 	speed_x = 0;
 	speed_y = 0;
 	FacingRight = 0;
@@ -21,8 +19,7 @@ Entity::Entity(double x, double y)
 	Move(x,y);
 }
 
-void Player::Control()
-{
+void Player::Control(){
 	Direction	=(key[SDL_SCANCODE_Z])+
 		0x02*key[SDL_SCANCODE_LEFT]+
 		0x04*key[SDL_SCANCODE_RIGHT]+
@@ -30,14 +27,12 @@ void Player::Control()
 		0x10*key[SDL_SCANCODE_UP];
 }
 
-int Entity::Update()
-{
+int Entity::Update(){
 	Move(pos_x + speed_x,pos_y + speed_y);
 	return 0;
 }
 
-int IUnit::Update()
-{
+int IUnit::Update(){
 	Entity::Update();
 		Collided = false;
 
@@ -46,8 +41,7 @@ int IUnit::Update()
 	return 0;
 }
 
-int Creature::Update()
-{
+int Creature::Update(){
 	IUnit::Update();
 /*	if(Direction & 0x10)
 		Dash();*/
@@ -61,14 +55,12 @@ int Creature::Update()
 	return 0;
 }
 
-int GroundEnemy::Update()
-{
+int GroundEnemy::Update(){
 	Control();
 
 		Push(0,0.04);
 	if (Direction & 0x01)
-		if (Standing)
-		{
+		if (Standing){
 			Standing = false;
 			Ascend();
 		}
@@ -83,22 +75,19 @@ int GroundEnemy::Update()
 	return Creature:: Update();
 }
 
-int FlyingEnemy::Update()
-{
+int FlyingEnemy::Update(){
 	Control();
 	Creature::Update();
 	speed_y/=2;
 	return 0;
 }
 
-int Player::Update()
-{
+int Player::Update(){
 	Control();
 		Push(0,0.04);
 	
 	if (Direction & 0x01)
-		if (Standing)
-		{
+		if (Standing){
 			Standing = false;
 			Ascend();
 		}
@@ -109,13 +98,12 @@ int Player::Update()
 
 	if (Direction & 0x08)
 		Descend();
+	light->Move(pos_x-0.5,pos_y-0.5);
 	return Creature::Update();
 }
 
-void GroundEnemy::Control()
-{
-	if (Collided)
-	{
+void GroundEnemy::Control(){
+	if (Collided){
 		if (Direction & 0x02)
 			Direction += 2;
 		else
@@ -123,29 +111,24 @@ void GroundEnemy::Control()
 	}
 }
 
-void GroundEnemy::Ascend()
-{
+void GroundEnemy::Ascend(){
 	Push(0,-.45);
 }
 
-void Player::Ascend()
-{
+void Player::Ascend(){
 	Push(0,-.45);
 }
 
-void Creature::Ascend()
-{
-			Push(0, -movespeed);
+void Creature::Ascend(){
+	Push(0, -movespeed);
 }
 
-void Creature::WalkLeft()
-{
+void Creature::WalkLeft(){
 	FacingRight = false;
 	Push(-movespeed, 0);
 }
 
-void Creature::WalkRight()
-{
+void Creature::WalkRight(){
 	FacingRight = true;
 	Push(movespeed, 0);
 }

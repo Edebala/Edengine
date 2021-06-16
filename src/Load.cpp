@@ -1,31 +1,31 @@
 #include "Edengine.h"
 
-void World::LoadMap(string Source_Folder)
+void World::LoadMap(const char* Source_Folder)
 {
 	Chunks.clear();
 	short x, y;
 	int DoorNr;
 	double Door_x,Door_y,Door_tX, Door_tY;
 
-	if (Source_Folder.empty()){
+	if (strlen(Source_Folder)==0){
 		chunksize = 8;
 		return;
 	}
 
-	char* textbfr = (char*) malloc(12+Source_Folder.length());
+	char* textbfr = (char*) malloc(12+strlen(Source_Folder));
 	strcpy(textbfr,"Maps/");
-	strcat(textbfr,Source_Folder.c_str());
+	strcat(textbfr,Source_Folder);
 	strcat(textbfr,".CNK");
-
-	if (!exists_test(textbfr)){
+	ifstream be(textbfr);
+	if (!be){
 		printf("%s map File was not Found!",textbfr);
 		return;	
 	}
 	printf("%s map File Found!\n",textbfr);
-	ifstream be(textbfr);
 	be >> chunksize;
 	be.get();
 	short** buffer = new short*[chunksize];
+
 	for (short i = 0; i < chunksize; i++)
 		buffer[i] = new short[chunksize];
 
@@ -33,8 +33,11 @@ void World::LoadMap(string Source_Folder)
 		x = be.get() - '0';
 		y = be.get() - '0';
 		for (short i = 0; i < chunksize; i++)
-			for (short j = 0; j < chunksize; j++)
+			for (short j = 0; j < chunksize; j++){
 				buffer[i][j] = be.good()?(be.get() - '0'):1;
+				if(buffer[i][j] == LAVA)Lights.push_back(
+					new Light(i+x*chunksize,j+y*chunksize,256));
+			}
 		AddChunk(x, y, buffer);
 	}
 	printf("Map Loaded Successfully\n");
@@ -48,8 +51,8 @@ void World::LoadDoors(string Source_Folder)
 	string Door_tMap;
 	string textbfr = "Maps/" + Source_Folder + ".txt";
 
-	if (!exists_test(textbfr)) return;
 	std::ifstream be(textbfr);
+	if(!be)return;
 	be >> DoorNr;
 	for (int i = 0; i < DoorNr; i++)
 	{
