@@ -39,7 +39,7 @@ Camera::Camera(string Tset, int x = 900, int y = 900){
 	Tileset = SDL_CreateTextureFromSurface(Renderer,srfc);
 	SDL_FreeSurface(srfc);
 
-	zoom = 64;
+	zoom = 48;
 	WIDT = x;
 	HEIT = y;
 	Interface = new HUD(Renderer,this);

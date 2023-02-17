@@ -14,7 +14,8 @@ void World::SpawnEntities(){
 			for (short j = 0; j < chunksize; j++){
 	double y = .5+c->y*chunksize+j ,x = .5+c->x*chunksize+i;
 	switch(c->d[i][j]-COIN){
-	case 0:Entities.push_back(new Coin(x,y));break;
+	case 0:Entities.push_back(new Coin(x,y));
+	Lights.push_back(((Coin*)Entities.back())->light);break;
 	case 1:Entities.push_back(new RedGuy(x,y));break;
 	case 2:Entities.push_back(new Slime(x,y));break;
 	case 4:Entities.push_back(new Copter(x,y));break;
@@ -45,9 +46,17 @@ void World::Draw(){
 	SDL_RenderClear(Cam->getRenderer());
 	Cam->Update();
 	DrawMapByBlock(true);
-	for (Entity* e:Entities)
+	for (Entity* e:Entities){
+	int lightLevel = 0;
+		for(int k=0;k<Lights.size();k++){
+			float d = pow(abs(Lights[k]->getX() - e->getX()),2) +
+				pow(abs(Lights[k]->getY() - e->getY()),2);
+			lightLevel = max(4 * (float)Lights[k]->intensity/(d+1),lightLevel);
+		}
+		lightLevel = min(255,lightLevel);
+		SDL_SetTextureColorMod(Cam->get_Tileset(),lightLevel,lightLevel,lightLevel);
 		e->Draw(Cam, time * FrameRate);
-
+	}
 	Cam->Interface->DrawInGame();
 	SDL_RenderPresent(Cam->getRenderer());
   SDL_Rect r{0,0,Cam->getWidth(),
@@ -89,9 +98,13 @@ void World::DrawChunk(chunk* c,bool Background){
 			(block < COIN ? block : 0)% 8 * Cam->get_TextureSize(),
 			(block < COIN ? block : 0)/ 8 * Cam->get_TextureSize(),
 			Cam->get_TextureSize(),Cam->get_TextureSize()};
-		int d = pow(abs(Cam->getX() - c->x*chunksize-i),2) + pow(abs(Cam->getY() -  c->y*chunksize-j),2);
-		int change = max(255-4*d,0);
-			SDL_SetTextureColorMod(Cam->get_Tileset(),change,change,change);
+			int lightLevel = 0;
+			for(int k=0;k<Lights.size();k++){
+				float d = pow(abs(Lights[k]->getX() - c->x*chunksize-i),2) + pow(abs(Lights[k]->getY() -  c->y*chunksize-j),2);
+			lightLevel = max(4* (float)Lights[k]->intensity/(d+1),lightLevel);
+		}
+			lightLevel = min(255,lightLevel);
+			SDL_SetTextureColorMod(Cam->get_Tileset(),lightLevel,lightLevel,lightLevel);
 		SDL_RenderCopy(
 			Cam->Renderer, Cam->get_Tileset(),&TxtrRect, &BlockRect);
 			SDL_SetTextureColorMod(Cam->get_Tileset(),255,255,255);
@@ -163,6 +176,7 @@ short World::Game(int &s_x, int &s_y,string& NextMap){
 	LoadDoors(NextMap);
 	Entities.push_back(new Player(s_x, s_y));
 	PlayerIterator = Entities.size()-1;
+	Lights.push_back(((Player*)Entities.back())->light);
 	Cam->Set_Target(Entities.back());
 	SpawnEntities();
 	double T =(double) CLOCKS_PER_SEC / FrameRate;
@@ -187,6 +201,7 @@ short World::Game(int &s_x, int &s_y,string& NextMap){
 			NextMap = ((Player*)Entities[PlayerIterator])->getMap();
 			
 			Entities.clear();
+			Lights.clear();
 			return 1;
 		}
 	}

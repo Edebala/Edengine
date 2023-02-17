@@ -98,6 +98,7 @@ int Player::Update(){
 
 	if (Direction & 0x08)
 		Descend();
+	light->Move(pos_x-0.5,pos_y-0.5);
 	return Creature::Update();
 }
 
