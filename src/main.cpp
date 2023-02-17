@@ -15,7 +15,7 @@ int main()
   {
     result = World_Instance.Game(x,y,NextMap);
     if (result == 1)
-        World_Instance.LoadMap(NextMap);
+			World_Instance.LoadMap(NextMap.c_str());
   }
   return 0;
 }

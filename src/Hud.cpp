@@ -1,7 +1,6 @@
 #include "Edengine.h"
 
-HUD::HUD(SDL_Renderer* NewRenderer,Camera* cam)
-{
+HUD::HUD(SDL_Renderer* NewRenderer,Camera* cam){
     if(NewRenderer)
         Renderer = NewRenderer;
     TTF_Init();

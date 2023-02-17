@@ -22,27 +22,24 @@
 
 using namespace std;
 
-struct chunk
-{ 
+struct chunk{ 
 	int x, y;
 	short** d;
 };
 
-struct Ede_move
-{
+struct Ede_move{
 	unsigned short FrameNumber;
-	unsigned short Move_Front;
+	unsigned short Front;
 };
 
-struct Ede_animation
-{
+struct Ede_animation{
 	Ede_move* Moves;
-	short Anim_Front;
-	unsigned int Anim_Speed;
+	short Front;
+	unsigned int Speed;
 };
 
-enum AnimationType
-	{ANIM_IDLE, ANIM_WALK, ANIM_JUMP };
+enum AnimType
+	{IDLE, WALK, JUMP };
 enum Blocks
 	{AIR, BRICK, DIRT, GRASS, LAVA,
 	SPIKES, COIN, LENGHT };
@@ -58,8 +55,7 @@ class PhisicsUnit;
 class FlyingEnemy;
 class GroundEnemy;
 
-class World
-{
+class World{
 	int PlayerIterator;
 	long chunksize;
 	std::vector <chunk*> Chunks;
@@ -75,19 +71,17 @@ private:
 	chunk* FindChunk(int x, int y);
 	void AddChunk(int x, int y, short** m);
 	short GetBlock(int x, int y);
-	void SetBlock(int x, int y);
-	void Get_Input();
 	int Update_Entities(string& NextMap);
 	int EntityWallHCollision(Entity* i);
 	int EntityWallVCollision(Entity* i);
 	int EntityEntityCollision(Entity*, Entity*);
 public:
 	short Game(int &s_x, int &s_y,string& NextMap);
-	void LoadMap(string Source_Folder);
+	void LoadMap(const char* Source_Folder);
 	void LoadDoors(string Source_Folder);
 	World(const string Source_Folder);
 	~World();
-	void DrawMapByBlock(bool Background = false);
+	void DrawMapByBlock(bool Background=false);
 	void DrawMapTexture();
 	void DrawEntities();
 	void DrawChunk(chunk*, bool Background=false);
@@ -97,8 +91,7 @@ public:
 	void SpawnEntities();
 };
 
-class Entity
-{
+class Entity{
 private:
 protected:
 	bool FacingRight;
@@ -111,22 +104,21 @@ public:
 	void Move(double x, double y){pos_x = x; pos_y = y;}
 	void Push(double x, double y) {speed_x+=x;speed_y+= y;}
 	virtual int Update(const unsigned char* key){}
-	double inline get_X() { return pos_x; }
-	double inline get_Y() { return pos_y; }
-	double inline get_Speed_X() { return speed_x; }
-	double inline get_Speed_Y() { return speed_y; }
-	double inline get_size() { return mysize; }
+	double inline getX() { return pos_x; }
+	double inline getY() { return pos_y; }
+	double inline getSpeedX() { return speed_x; }
+	double inline getSpeedY() { return speed_y; }
+	double inline getSize() { return mysize; }
 	virtual EntityType get_Type() = 0;
 	virtual	int Update();
-	virtual void Draw(Camera*,unsigned,int){}
+	virtual void Draw(Camera*,unsigned){}
 	virtual void Interact(Entity*){}
 	virtual char Entity_Collision(Entity*){}
 	virtual short Wall_Collision(
 		bool Hrz,int dist,short block){return 0;}
 };
 
-class IUnit : public Entity
-{
+class IUnit : public Entity{
 public:
 	IUnit(double x,double y):Entity(x,y){}
 	int Update();
@@ -137,11 +129,9 @@ protected:
 	void SetInvincible(short n) { Invincible = n; }
 };
 
-class Camera : public Entity
-{
-	public:
-	int WIDT, HEIT;
+class Camera : public Entity{
 protected:
+	int WIDT, HEIT;
 	short zoom;
 	SDL_Window* Window;
 	Entity* Target;
@@ -156,11 +146,11 @@ public:
 	int get_TextureSize() { return texture_size; }
 	Camera(string, int, int);
 	SDL_Texture* get_Tileset() { return Tileset; }
-	double get_Width() { return WIDT; }
-	double get_Height() { return HEIT; }
-	double get_zoom() { return zoom; }
+	double getWidth() { return WIDT; }
+	double getHeight() { return HEIT; }
+	double getZoom() { return zoom; }
 	void set_zoom(int value) { zoom = value; }
-	SDL_Renderer* get_renderer() { return Renderer; }
+	SDL_Renderer* getRenderer() { return Renderer; }
 	void CreateCanvas(string, int, int);
 	void DeleteCanvas();
 	int Update();
@@ -169,9 +159,9 @@ public:
 class TextureUnit : public IUnit
 {
 protected:
-	Ede_animation Animation;
+	Ede_animation Anim;
 public:
-	void Draw(Camera*, unsigned, int);
+	void Draw(Camera*, unsigned);
 	TextureUnit(double x, double y):IUnit(x,y){};
 };
 
@@ -187,30 +177,29 @@ public:
 	bool isStanding() { return Standing; }
 };
 
-class ControlUnit
-{
+class ControlUnit{
 protected:
 	unsigned char Direction;
 };
 
-class Collectable : public TextureUnit
-{
+class Collectable : public TextureUnit{
 public:
 	EntityType get_Type(){return COLLECTABLE;}
 	Collectable(double x,double y):TextureUnit(x,y){}
 };
 
-class BotController : public ControlUnit
-{
+class BotController : public ControlUnit{
 	protected:
 	virtual void Control() = 0;	
 };
 
-class Creature : public TextureUnit, public PhisicsUnit
-{
+class Creature : public TextureUnit, public PhisicsUnit{
 protected:
 	double movespeed;
-	Creature(double x, double y):TextureUnit(x,y){}
+	Creature(double x, double y):TextureUnit(x,y){
+		movespeed = 0.09;
+		mysize = 0.9;
+	}
 	virtual void Ascend();
 	virtual void WalkLeft();
 	virtual void WalkRight();
@@ -223,8 +212,7 @@ public:
 	short Wall_Collision(bool,int,short);
 };
 
-class GroundEnemy : public Creature , public BotController
-{
+class GroundEnemy : public Creature , public BotController{
 public:
 	EntityType get_Type(){return ENEMY;}
 	GroundEnemy(double x,double y):Creature(x,y){}
@@ -233,8 +221,7 @@ public:
 	void Ascend();
 };
 
-class FlyingEnemy : public Creature, public BotController
-{
+class FlyingEnemy : public Creature, public BotController{
 public:
 	EntityType get_Type(){return ENEMY;}
 	FlyingEnemy(double x,double y):Creature(x,y){}
@@ -255,17 +242,15 @@ public:
 	string getMap(){return map;}
 	void Control();
 	void Ascend();
-		Player(double x, double y):Creature(x,y){
+	Player(double x, double y):Creature(x,y){
 		key = SDL_GetKeyboardState(0);
-		Animation.Anim_Front = 10;
-		Animation.Moves = new Ede_move[3];
-		Animation.Moves[ANIM_IDLE].FrameNumber = 4;
-		Animation.Moves[ANIM_IDLE].Move_Front = 0;
-		Animation.Moves[ANIM_WALK].FrameNumber = 4;
-		Animation.Moves[ANIM_WALK].Move_Front = 4;
-		Animation.Moves[ANIM_JUMP].FrameNumber = 2;
-		Animation.Moves[ANIM_JUMP].Move_Front = 8;
-		Animation.Anim_Speed = 300;
+		Anim.Front = 10;
+		Anim.Moves = new Ede_move[3];
+		Anim.Moves[IDLE].FrameNumber = 4;
+		Anim.Moves[IDLE].Front = 0;
+		Anim.Moves[WALK] ={4,4};
+		Anim.Moves[JUMP] ={2,8};
+		Anim.Speed = 300;
 		movespeed = 0.25;
 		mysize = 0.9;}
 	EntityType get_Type(){return PLAYER;}
@@ -279,7 +264,7 @@ class Door : public IUnit
 public:
 	void Interact (Player* T){
 		T->Move(m_tX,m_tY);
-		cout<<m_tX<<endl;
+		printf("%i\n",m_tX);
 		T->map = m_targetMap;}
 	double get_tX() { return m_tX; }
 	double get_tY() { return m_tY; }
@@ -298,17 +283,12 @@ class Coin : public Collectable
 {
 public:
 	Coin(double x,double y): Collectable(x,y){
-		Animation.Anim_Front = 6;
-		Animation.Moves = new Ede_move[3];
-		Animation.Moves[ANIM_IDLE].FrameNumber = 4;
-		Animation.Moves[ANIM_IDLE].Move_Front = 0;
-		Animation.Moves[ANIM_WALK].FrameNumber = 0;
-		Animation.Moves[ANIM_WALK].Move_Front = 0;
-		Animation.Moves[ANIM_JUMP].FrameNumber = 0;
-		Animation.Moves[ANIM_JUMP].Move_Front = 0;
-		Animation.Anim_Speed = 250;
-		mysize = 0.8;
-			
+		Anim.Front = 6;
+		Anim.Moves = new Ede_move[1];
+		Anim.Moves[IDLE].FrameNumber = 4;
+		Anim.Moves[IDLE].Front = 0;
+		Anim.Speed = 250;
+		mysize = .7;
 	}
 };
 
@@ -316,18 +296,14 @@ class Slime : public GroundEnemy
 {
 public:
 	Slime(double x,double y): GroundEnemy(x,y){
-		Animation.Anim_Front = 31;
-		Animation.Moves = new Ede_move[3];
-		Animation.Moves[ANIM_IDLE].FrameNumber = 1;
-		Animation.Moves[ANIM_IDLE].Move_Front = 0;
-		Animation.Moves[ANIM_WALK].FrameNumber = 1;
-		Animation.Moves[ANIM_WALK].Move_Front = 0;
-		Animation.Moves[ANIM_JUMP].FrameNumber = 2;
-		Animation.Moves[ANIM_JUMP].Move_Front = 1;
-		Animation.Anim_Speed = 300;
+		Anim.Front = 31;
+		Anim.Moves = new Ede_move[3];
+		Anim.Moves[IDLE].FrameNumber = 1;
+		Anim.Moves[IDLE].Front = 0;
+		Anim.Moves[WALK] = {1,0};
+		Anim.Moves[JUMP] = {2,1};
+		Anim.Speed = 300;
 		Direction = 5;
-		movespeed = 0.09;
-		mysize = 0.9;
 			
 	}
 };
@@ -336,42 +312,30 @@ class RedGuy : public GroundEnemy
 {
 public:
 	RedGuy(double x,double y): GroundEnemy(x,y){
-		Animation.Anim_Front = 20;
-		Animation.Moves = new Ede_move[3];
-		Animation.Moves[ANIM_IDLE].FrameNumber = 4;
-		Animation.Moves[ANIM_IDLE].Move_Front = 0;
-		Animation.Moves[ANIM_WALK].FrameNumber = 4;
-		Animation.Moves[ANIM_WALK].Move_Front = 4;
-		Animation.Moves[ANIM_JUMP].FrameNumber = 2;
-		Animation.Moves[ANIM_JUMP].Move_Front = 8;
-		Animation.Anim_Speed = 300;
+		Anim.Front = 20;
+		Anim.Moves = new Ede_move[3];
+		Anim.Moves[IDLE].FrameNumber = 4;
+		Anim.Moves[IDLE].Front = 0;
+		Anim.Moves[WALK] = {4,4};
+		Anim.Moves[JUMP] = {2,8};
+		Anim.Speed = 300;
 		Direction = 4;
-		movespeed = 0.09;
-		mysize = 0.9;
 	}
 };
 
-class Copter: public FlyingEnemy
-{
+class Copter: public FlyingEnemy{
 public:
 	Copter(double x,double y): FlyingEnemy(x,y){
-		Animation.Anim_Front = 44;
-		Animation.Moves = new Ede_move[3];
-		Animation.Moves[ANIM_IDLE].FrameNumber = 4;
-		Animation.Moves[ANIM_IDLE].Move_Front = 0;
-		Animation.Moves[ANIM_WALK].FrameNumber = 1;
-		Animation.Moves[ANIM_WALK].Move_Front = 0;
-		Animation.Moves[ANIM_JUMP].FrameNumber = 1;
-		Animation.Moves[ANIM_JUMP].Move_Front = 8;
-		Animation.Anim_Speed = 100;
+		Anim.Front = 44;
+		Anim.Moves = new Ede_move[1];
+		Anim.Moves[IDLE].FrameNumber = 4;
+		Anim.Moves[IDLE].Front = 0;
+		Anim.Speed = 100;
 		Direction = 0;
-		movespeed = 0;
-		mysize = 0.9;	
 	}
 };
 
-class HUD
-{
+class HUD{
 	unsigned HudSize;
 	TTF_Font* Font;
 	SDL_Renderer* Renderer;
@@ -389,8 +353,7 @@ public:
 	Camera* GetCamera(){return Cam;}
 };
 
-inline bool exists_test(string name) {
+inline bool exists_test(const char* name) {
 	std::ifstream f(name);
 	return f.good();
-
 }
